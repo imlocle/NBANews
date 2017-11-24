@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.shortcuts import render, redirect
 from .models import User, UserManager
 from django.contrib import messages
 import bcrypt
+from nba_data import Client, CurrentSeasonOnly, Season
 
 def index(request):
     return render(request, 'nba_news/index.html')
@@ -47,3 +47,6 @@ def login(request):
 def logoutr(request):
     request.session['current_user'] = 0
     return redirect('/')
+
+def get_players_for_2015_season():
+    return Client.get_players_for_season(season = Season.season_2015)
