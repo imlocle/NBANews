@@ -17,15 +17,15 @@ class UserManager(models.Manager):
             errorlist.append("First name is too short")            
         if len(last_name) < 2:
             errorlist.append("Last name is too short")           
-        if not  EMAIL_REGEX.match(email):
+        if not EMAIL_REGEX.match(email):
             errorlist.append('Please enter a valid email') 
         if the_user:
             errorlist.append("Email already taken")           
         if confirm_password != password:
-            errorlist.append("Passwords don't match")
+            errorlist.append("Passwords don\'t match")
         if len(password) < 8:
             errorlist.append("Please enter a password longer than 8 characters")
-        if len(errorlist) > 0:
+        if (errorlist.count) > 0:
             return errorlist
         else:
             return True
@@ -43,6 +43,26 @@ class UserManager(models.Manager):
             errorlist.append("Wrong email or password")
             return errorlist
 
+class CommentManager(models.Manager):
+    def create_comment(self, create_comment):
+        curse_words = [
+            re.compile("fuck"),
+            re.compile("shit"),
+            re.compile("cunt")
+        ]
+        errorlist = []
+        if len(create_comment) < 2:
+            errorlist.append("Comment is too short.")
+        if len(create_comment) > 200:
+            errorlist.append("Comment is too long.")
+        if (regex.match(create_comment) for regex in curse_words):
+            errorlist.append("Let's be a little bit more mature please.")
+        if len(errorlist) > 0:
+            return errorlist
+        else:
+            return True
+
+
 class User(models.Model):
     first_name = models.CharField(max_length = 30)
     last_name = models.CharField(max_length = 30)
@@ -51,5 +71,13 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add = True)
     updated_at = models.DateTimeField(auto_now = True)
     objects = UserManager()
+
+class Comment(models.Model):
+    comment = models.CharField(max_length=200)
+    user = models.ForeignKey(User, related_name= 'user_to_comment')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    objects = CommentManager()
+
 
 
