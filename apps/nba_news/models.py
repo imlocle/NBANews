@@ -25,7 +25,8 @@ class UserManager(models.Manager):
             errorlist.append("Passwords don\'t match")
         if len(password) < 8:
             errorlist.append("Please enter a password longer than 8 characters")
-        if (errorlist.count) > 0:
+        if len(errorlist) > 0:
+            print errorlist
             return errorlist
         else:
             return True
