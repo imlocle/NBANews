@@ -10,7 +10,7 @@ class UserManager(models.Manager):
     def register(self, first_name, last_name, email, password, confirm_password):
         errorlist = []
         the_user = User.objects.filter(email = email)
-
+        print '$' * 100
         if len(first_name) < 2:
             errorlist.append("First name is too short")            
         if len(last_name) < 2:
@@ -23,11 +23,11 @@ class UserManager(models.Manager):
             errorlist.append("Passwords don\'t match")
         if len(password) < 8:
             errorlist.append("Please enter a password longer than 8 characters")
-        if errorlist.count > 0:
+        if len(errorlist) > 0:
             return errorlist
         else:
             return True
-
+    
     def login(self, email, password):
         errorlist = []
         the_user = User.objects.filter(email = email)
@@ -38,7 +38,7 @@ class UserManager(models.Manager):
                 errorlist.append("Wrong email or password")
                 return errorlist
         else:
-            errorlist.append("Wrong email or password")
+            errorlist.append("User does not exist")
             return errorlist
 
 class CommentManager(models.Manager):
@@ -55,7 +55,7 @@ class CommentManager(models.Manager):
             errorlist.append("Comment is too short.")
         if len(create_comment) > 200:
             errorlist.append("Comment is too long.")
-        if errorlist.count > 0:
+        if len(errorlist) > 0:
             return errorlist
         else:
             return True
@@ -64,9 +64,8 @@ class ArticleManager(models.Manager):
     def new_artical(self, url, url_image, author, source, description, title):
         the_artical = Article.objects.filter(title = title)
         errorlist = []
-
         if the_artical:
-            errorlist.append("Already have this artical")
+            errorlist.append("Already have this article")
         if errorlist.count > 0:
             return errorlist
         else:

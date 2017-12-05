@@ -1,10 +1,8 @@
 from __future__ import unicode_literals
-import json
-import bcrypt
-import requests
-from django.shortcuts import render, redirect
+from django.shortcuts import render, HttpResponse, redirect
 from django.contrib import messages
-from .models import User, Comment, Article
+import bcrypt, requests, json
+from .models import User, UserManager, Comment, Article
 
 apikey = '46bd8a2eb02c485ba51cea891e1f0b1b'
 espnurl = 'https://newsapi.org/v2/top-headlines?sources=espn&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
@@ -39,11 +37,13 @@ def registration(request):
     confirm_password = request.POST["confirm_password"]
     check = User.objects.register(first_name, last_name, email, password, confirm_password)
     if check == True:
+        print '&' *100
         pwhashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user = User.objects.create(first_name = first_name, last_name = last_name, email = email, password = pwhashed)
         request.session["current_user"] = user.id
         return redirect("/nbanews")
     else:
+        print '*' *100
         for i in range(0, len(check)):
             messages.warning(request, check[i])
         return redirect("/")
@@ -60,11 +60,15 @@ def create_comment(request):
 
 def nbanews(request):
     current_user = User.objects.get(id = request.session['current_user'])
-
-    for i in Article.objects.raw("SELECT * FROM nba_news_article"):
-        print (i.source)
-
-
+    newapi(espnurl)
+    newapi(bleacherreporturl)
+    espn = []
+    bleacher = []
+    for i in Article.objects.raw("SELECT * FROM nba_news_Article"):
+        if i.source == 'Bleacher Report':
+            bleacher.append(i)
+        if i.source == 'ESPN':
+            espn.append(i)
     context = {
                 'current_user': current_user
                 }
