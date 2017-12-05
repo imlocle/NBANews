@@ -1,13 +1,16 @@
 from __future__ import unicode_literals
-from django.shortcuts import render, HttpResponse, redirect
+import json
+import bcrypt
+import requests
+from django.shortcuts import render, redirect
 from django.contrib import messages
-import bcrypt, requests, json
-from .models import User, UserManager, Comment
+from .models import User, Comment, Article
 
 apikey = '46bd8a2eb02c485ba51cea891e1f0b1b'
 espnurl = 'https://newsapi.org/v2/top-headlines?sources=espn&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
-bleacherReportUrl = 'https://newsapi.org/v2/top-headlines?sources=bleacher-report&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
+bleacherreporturl = 'https://newsapi.org/v2/everything?sources=bleacher-report&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
 nbaPlayerStats = 'http://data.nba.net/10s/prod/v1/2016/players.json'
+keywords = {'Basketball', 'basketball', 'NBA', 'Kobe' 'Curry', 'Jordan', 'LeBron'}
 
 def index(request):
     return render (request, 'nba_news/index.html')
@@ -57,18 +60,28 @@ def create_comment(request):
 
 def nbanews(request):
     current_user = User.objects.get(id = request.session['current_user'])
-    testing = espn()
+
+    for i in Article.objects.raw("SELECT * FROM nba_news_article"):
+        print (i.source)
+
+
     context = {
-                'current_user':current_user
+                'current_user': current_user
                 }
 
     return render(request, 'nba_news/nbanews.html', context)
 
-def espn():
-    basketball = []
-    espnreq = requests.get(espnurl).text
-    espn = json.loads(espnreq)['articles']
-    for i, url in enumerate(espn):
-        basketball.append(espn[i]['url'])
+
+def newapi(url):
+    getapi = requests.get(url).text
+    converttojson = json.load(getapi)['articles']
+    for i in range(len(converttojson)):
+        description = converttojson[i]['description']
+        if any(x in converttojson for x in keywords):
+            url = converttojson[i]['url']
+            url_image = converttojson[i]['urlToImage']
+            author = converttojson[i]['author']
+            source = converttojson[i]['source']['name']
+            title = converttojson[i]['title']
+            Article.objects.nesw_artical(url, url_image, author, source, description, title)
         i+=1
-    return basketball

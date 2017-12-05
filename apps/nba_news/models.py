@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.db import models
-from django.contrib import messages
 import re
 import bcrypt
-import datetime
+from django.db import models
 
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
 
@@ -51,16 +49,28 @@ class CommentManager(models.Manager):
             re.compile("cunt")
         ]
         errorlist = []
+        if any(x in create_comment for x in curse_words):
+            errorlist.append("Let's be mature")
         if len(create_comment) < 2:
             errorlist.append("Comment is too short.")
         if len(create_comment) > 200:
             errorlist.append("Comment is too long.")
-        if (regex.match(create_comment) for regex in curse_words):
-            errorlist.append("Let's be a little bit more mature please.")
-        if len(errorlist) > 0:
+        if errorlist.count > 0:
             return errorlist
         else:
             return True
+
+class ArticleManager(models.Manager):
+    def new_artical(self, url, url_image, author, source, description, title):
+        the_artical = Article.objects.filter(title = title)
+        errorlist = []
+
+        if the_artical:
+            errorlist.append("Already have this artical")
+        if errorlist.count > 0:
+            return errorlist
+        else:
+            Article.objects.create(url = url, url_image = url_image, author = author, source = source, description = description, title = title)
 
 
 class User(models.Model):
@@ -79,5 +89,14 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     objects = CommentManager()
 
-
+class Article(models.Model):
+    url = models.CharField(max_length=500)
+    url_image = models.CharField(max_length=500)
+    author = models.CharField(max_length=200)
+    source = models.CharField(max_length=200)
+    description = models.CharField(max_length=500)
+    title = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add = True)
+    updated_at = models.DateTimeField(auto_now = True)
+    objects = ArticleManager()
 
