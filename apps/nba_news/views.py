@@ -1,16 +1,18 @@
 from __future__ import unicode_literals
-import bcrypt
-import requests 
 import json
+import bcrypt
+import requests
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from .models import User, Comment, Article
 
-apikey = '46bd8a2eb02c485ba51cea891e1f0b1b'
-espnurl = 'https://newsapi.org/v2/top-headlines?sources=espn&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
-bleacherreporturl = 'https://newsapi.org/v2/everything?sources=bleacher-report&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
-nbaPlayerStats = 'http://data.nba.net/10s/prod/v1/2016/players.json'
-keywords = {'Basketball', 'basketball', 'NBA', 'Kobe' 'Curry', 'Jordan', 'LeBron', 'LaVar'}
+apikey='46bd8a2eb02c485ba51cea891e1f0b1b'
+espnurl='https://newsapi.org/v2/top-headlines?sources=espn&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
+bleacherreporturl='https://newsapi.org/v2/everything?sources=bleacher-report&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
+nbaPlayerStats='http://data.nba.net/10s/prod/v1/2016/players.json'
+keywords={'Basketball', 'basketball', 'NBA', 'Kobe' 'Curry', 'Jordan', 'LeBron', 'LaVar'}
+
+maxtries=1000
 
 def index(request):
     return render (request, 'nba_news/index.html')
@@ -78,6 +80,7 @@ def nbanews(request):
     return render(request, 'nba_news/nbanews.html', context)
 
 
+# newapi.org only allows 1000 hits a day.
 def newapi(url):
     getapi = requests.get(url).text
     converttojson = json.loads(getapi)['articles']
