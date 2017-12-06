@@ -9,7 +9,12 @@
     <a href="/logout">Log Out</a>
     <h1>Welcome {{current_user.first_name}}</h1>
 
+    {% for i in espn %}
+    <h1><a href="{{i.url}}">{{i.title}}</a></h1>
     
+    <img src="{{i.url_image}}" alt="">
+    {%endfor%}
+
     
 </body>
 </html>

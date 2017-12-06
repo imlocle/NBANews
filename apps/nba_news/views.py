@@ -1,14 +1,16 @@
 from __future__ import unicode_literals
-from django.shortcuts import render, HttpResponse, redirect
+import bcrypt
+import requests 
+import json
 from django.contrib import messages
-import bcrypt, requests, json
-from .models import User, UserManager, Comment, Article
+from django.shortcuts import render, redirect
+from .models import User, Comment, Article
 
 apikey = '46bd8a2eb02c485ba51cea891e1f0b1b'
 espnurl = 'https://newsapi.org/v2/top-headlines?sources=espn&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
 bleacherreporturl = 'https://newsapi.org/v2/everything?sources=bleacher-report&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
 nbaPlayerStats = 'http://data.nba.net/10s/prod/v1/2016/players.json'
-keywords = {'Basketball', 'basketball', 'NBA', 'Kobe' 'Curry', 'Jordan', 'LeBron'}
+keywords = {'Basketball', 'basketball', 'NBA', 'Kobe' 'Curry', 'Jordan', 'LeBron', 'LaVar'}
 
 def index(request):
     return render (request, 'nba_news/index.html')
@@ -37,13 +39,11 @@ def registration(request):
     confirm_password = request.POST["confirm_password"]
     check = User.objects.register(first_name, last_name, email, password, confirm_password)
     if check == True:
-        print '&' *100
         pwhashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user = User.objects.create(first_name = first_name, last_name = last_name, email = email, password = pwhashed)
         request.session["current_user"] = user.id
         return redirect("/nbanews")
     else:
-        print '*' *100
         for i in range(0, len(check)):
             messages.warning(request, check[i])
         return redirect("/")
@@ -64,13 +64,15 @@ def nbanews(request):
     newapi(bleacherreporturl)
     espn = []
     bleacher = []
-    for i in Article.objects.raw("SELECT * FROM nba_news_Article"):
+    for i in Article.objects.raw("SELECT * FROM nba_news_article"):
         if i.source == 'Bleacher Report':
             bleacher.append(i)
         if i.source == 'ESPN':
             espn.append(i)
     context = {
-                'current_user': current_user
+                'current_user': current_user,
+                'espn': espn,
+                'bleacher':bleacher
                 }
 
     return render(request, 'nba_news/nbanews.html', context)
@@ -78,14 +80,14 @@ def nbanews(request):
 
 def newapi(url):
     getapi = requests.get(url).text
-    converttojson = json.load(getapi)['articles']
+    converttojson = json.loads(getapi)['articles']
     for i in range(len(converttojson)):
         description = converttojson[i]['description']
-        if any(x in converttojson for x in keywords):
+        if any(x in description for x in keywords):
             url = converttojson[i]['url']
             url_image = converttojson[i]['urlToImage']
             author = converttojson[i]['author']
             source = converttojson[i]['source']['name']
             title = converttojson[i]['title']
-            Article.objects.nesw_artical(url, url_image, author, source, description, title)
+            Article.objects.new_article(url, url_image, author, source, description, title)
         i+=1

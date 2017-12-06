@@ -61,12 +61,12 @@ class CommentManager(models.Manager):
             return True
 
 class ArticleManager(models.Manager):
-    def new_artical(self, url, url_image, author, source, description, title):
-        the_artical = Article.objects.filter(title = title)
+    def new_article(self, url, url_image, author, source, description, title):
+        the_article = Article.objects.filter(title = title)
         errorlist = []
-        if the_artical:
+        if the_article:
             errorlist.append("Already have this article")
-        if errorlist.count > 0:
+        if len(errorlist) > 0:
             return errorlist
         else:
             Article.objects.create(url = url, url_image = url_image, author = author, source = source, description = description, title = title)
@@ -93,7 +93,7 @@ class Article(models.Model):
     url_image = models.CharField(max_length=500)
     author = models.CharField(max_length=200)
     source = models.CharField(max_length=200)
-    description = models.CharField(max_length=500)
+    description = models.CharField(max_length=3000)
     title = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add = True)
     updated_at = models.DateTimeField(auto_now = True)
