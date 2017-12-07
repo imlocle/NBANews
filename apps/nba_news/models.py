@@ -10,7 +10,6 @@ class UserManager(models.Manager):
     def register(self, first_name, last_name, email, password, confirm_password):
         errorlist = []
         the_user = User.objects.filter(email = email)
-        print '$' * 100
         if len(first_name) < 2:
             errorlist.append("First name is too short")            
         if len(last_name) < 2:
@@ -61,12 +60,12 @@ class CommentManager(models.Manager):
             return True
 
 class ArticleManager(models.Manager):
-    def new_article(self, url, url_image, author, source, description, title):
+    def new_article(self, url, url_image, author, source, description, title, published_on):
         the_article = Article.objects.filter(url = url, title = title)
         if the_article:
             return False
         else:
-            Article.objects.create(url = url, url_image = url_image, author = author, source = source, description = description, title = title)
+            Article.objects.create(url = url, url_image = url_image, author = author, source = source, description = description, title = title, published_on = published_on)
 
 
 class User(models.Model):
@@ -92,6 +91,7 @@ class Article(models.Model):
     source = models.CharField(max_length=200)
     description = models.CharField(max_length=3000)
     title = models.CharField(max_length=200)
+    published_on = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add = True)
     updated_at = models.DateTimeField(auto_now = True)
     objects = ArticleManager()

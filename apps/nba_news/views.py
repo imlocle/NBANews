@@ -66,7 +66,7 @@ def nbanews(request):
     newapi(bleacherreporturl)
     espn = []
     bleacher = []
-    for i in Article.objects.raw("SELECT * FROM nba_news_article"):
+    for i in Article.objects.raw("SELECT * FROM nba_news_article order by created_at DESC"):
         if i.source == 'Bleacher Report':
             bleacher.append(i)
         if i.source == 'ESPN':
@@ -92,5 +92,6 @@ def newapi(url):
             author = converttojson[i]['author']
             source = converttojson[i]['source']['name']
             title = converttojson[i]['title']
-            Article.objects.new_article(url, url_image, author, source, description, title)
+            published_on = converttojson[i]['publishedAt']
+            Article.objects.new_article(url, url_image, author, source, description, title, published_on)
         i+=1
