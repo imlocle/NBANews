@@ -61,7 +61,7 @@ class CommentManager(models.Manager):
 
 class ArticleManager(models.Manager):
     def new_article(self, url, url_image, author, source, description, title, published_on):
-        the_article = Article.objects.filter(url = url, title = title)
+        the_article = Article.objects.filter(url = url)
         if the_article:
             return False
         else:
@@ -86,7 +86,7 @@ class Comment(models.Model):
 
 class Article(models.Model):
     url = models.CharField(max_length=500)
-    url_image = models.CharField(max_length=500)
+    url_image = models.CharField(max_length=500, blank=True, null=True)
     author = models.CharField(max_length=200, blank=True, null=True)
     source = models.CharField(max_length=200)
     description = models.CharField(max_length=3000)

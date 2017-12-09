@@ -2,14 +2,18 @@ from __future__ import unicode_literals
 import json
 import bcrypt
 import requests
+import re
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from .models import User, Comment, Article
 
-apikey='46bd8a2eb02c485ba51cea891e1f0b1b'
+espn_rss__nba_url='http://www.espn.com/espn/rss/nba/news'
+news_apikey='46bd8a2eb02c485ba51cea891e1f0b1b'
 espnurl='https://newsapi.org/v2/top-headlines?sources=espn&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
 bleacherreporturl='https://newsapi.org/v2/everything?sources=bleacher-report&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
+foxsportsurl='https://newsapi.org/v2/everything?sources=fox-sports&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
 nbaPlayerStats='http://data.nba.net/10s/prod/v1/2016/players.json'
+
 keywords={'Basketball', 'basketball', 'NBA', 'Kobe' 'Curry', 'Jordan', 'LeBron', 'LaVar'}
 
 maxtries=1000
@@ -24,7 +28,7 @@ def login(request):
     if check == True:
         user = User.objects.get(email = email)
         request.session["current_user"] = user.id
-        return redirect('/nbanews')
+        return redirect('/nba_news')
     else:
         messages.warning(request, check[0])
         return redirect('/')
@@ -44,7 +48,7 @@ def registration(request):
         pwhashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user = User.objects.create(first_name = first_name, last_name = last_name, email = email, password = pwhashed)
         request.session["current_user"] = user.id
-        return redirect("/nbanews")
+        return redirect("/nba_news")
     else:
         for i in range(0, len(check)):
             messages.warning(request, check[i])
@@ -60,28 +64,35 @@ def create_comment(request):
             messages.warning(request, check[i])
         return redirect('/')
 
-def nbanews(request):
+def nba_news(request):
     current_user = User.objects.get(id = request.session['current_user'])
-    newapi(espnurl)
-    newapi(bleacherreporturl)
+    espn_rss_nba(espn_rss__nba_url)
+    count = 0
+    newsapi(espnurl)
+    newsapi(bleacherreporturl)
+    newsapi(foxsportsurl)
     espn = []
     bleacher = []
+    foxsports =[]
     for i in Article.objects.raw("SELECT * FROM nba_news_article order by created_at DESC"):
         if i.source == 'Bleacher Report':
             bleacher.append(i)
         if i.source == 'ESPN':
             espn.append(i)
+        if i.source == 'Fox Sports':
+            foxsports.append(i)
     context = {
                 'current_user': current_user,
                 'espn': espn,
-                'bleacher':bleacher
+                'bleacher':bleacher,
+                'foxsports': foxsports
                 }
 
     return render(request, 'nba_news/nbanews.html', context)
 
 
 # newapi.org only allows 1000 hits a day.
-def newapi(url):
+def newsapi(url):
     getapi = requests.get(url).text
     converttojson = json.loads(getapi)['articles']
     for i in range(len(converttojson)):
@@ -95,3 +106,22 @@ def newapi(url):
             published_on = converttojson[i]['publishedAt']
             Article.objects.new_article(url, url_image, author, source, description, title, published_on)
         i+=1
+
+def espn_rss_nba(url):
+        espn_call = requests.get(url).text
+        match_collection = re.findall(r'<item>.+?</item>', espn_call)
+        for i in match_collection:
+            url = parse_definition("<link><!\[CDATA\[(.+?)\]", i)
+            url_image = "null"
+            author = "null"
+            source = "ESPN"
+            description = parse_definition("<description><!\[CDATA\[(.+?)\]", i)
+            title = parse_definition("<title><!\[CDATA\[(.+?)\]", i)
+            published_on = parse_definition("<pubDate>(.+?)</pubDate>", i)
+            Article.objects.new_article(url, url_image, author, source, description, title, published_on)
+
+def parse_definition(regex_pattern, string):
+    i = re.compile(regex_pattern)
+    return i.search(string).group(1)
+
+
