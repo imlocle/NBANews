@@ -87,11 +87,11 @@ class Comment(models.Model):
 class Article(models.Model):
     url = models.CharField(max_length=500)
     url_image = models.CharField(max_length=500)
-    author = models.CharField(max_length=200)
+    author = models.CharField(max_length=200, blank=True, null=True)
     source = models.CharField(max_length=200)
     description = models.CharField(max_length=3000)
     title = models.CharField(max_length=200)
-    published_on = models.CharField(max_length=50)
+    published_on = models.CharField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add = True)
     updated_at = models.DateTimeField(auto_now = True)
     objects = ArticleManager()
