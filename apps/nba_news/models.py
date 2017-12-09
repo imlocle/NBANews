@@ -60,12 +60,12 @@ class CommentManager(models.Manager):
             return True
 
 class ArticleManager(models.Manager):
-    def new_article(self, url, url_image, author, source, description, title, published_on):
+    def new_article(self, url, url_image, author, author_url, source, description, title, published_on):
         the_article = Article.objects.filter(url = url)
         if the_article:
             return False
         else:
-            Article.objects.create(url = url, url_image = url_image, author = author, source = source, description = description, title = title, published_on = published_on)
+            Article.objects.create(url = url, url_image = url_image, author = author, author_url = author_url, source = source, description = description, title = title, published_on = published_on)
 
 
 class User(models.Model):
@@ -88,6 +88,7 @@ class Article(models.Model):
     url = models.CharField(max_length=500)
     url_image = models.CharField(max_length=500, blank=True, null=True)
     author = models.CharField(max_length=200, blank=True, null=True)
+    author_url = models.CharField(max_length=500, blank=True, null=True)
     source = models.CharField(max_length=200)
     description = models.CharField(max_length=3000)
     title = models.CharField(max_length=200)

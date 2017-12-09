@@ -3,10 +3,15 @@ import json
 import bcrypt
 import requests
 import re
+import ssl
+import socket
+import urllib2
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from .models import User, Comment, Article
 
+
+the_players_tribune_url='https://www.theplayerstribune.com/sports/basketball/'
 espn_rss__nba_url='http://www.espn.com/espn/rss/nba/news'
 news_apikey='46bd8a2eb02c485ba51cea891e1f0b1b'
 espnurl='https://newsapi.org/v2/top-headlines?sources=espn&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
@@ -66,8 +71,8 @@ def create_comment(request):
 
 def nba_news(request):
     current_user = User.objects.get(id = request.session['current_user'])
+    # theplayerstribune(the_players_tribune_url)
     espn_rss_nba(espn_rss__nba_url)
-    count = 0
     newsapi(espnurl)
     newsapi(bleacherreporturl)
     newsapi(foxsportsurl)
@@ -101,27 +106,39 @@ def newsapi(url):
             url = converttojson[i]['url']
             url_image = converttojson[i]['urlToImage']
             author = converttojson[i]['author']
+            author_url = 'null'
             source = converttojson[i]['source']['name']
             title = converttojson[i]['title']
             published_on = converttojson[i]['publishedAt']
-            Article.objects.new_article(url, url_image, author, source, description, title, published_on)
+            Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
         i+=1
 
+# TLS 1.2 problem
+def theplayerstribune(url):
+    ctx = ssl.SSLContext(ssl.OP_NO_SSLv3)
+    response = urllib2.urlopen(url, context=ctx).read()
+    print response
+    tribune_call = requests.get(url).text
+    match_collection = re.findall(r'<div class=\"article-snippet\">.+?/h3><p>.+?</p>', tribune_call)
+    for i in match_collection:
+        url = parse_definition("<div class=\"article-snippet\">\\s*<a href=\"([^\"]+)\">", i)
+        print url
+
 def espn_rss_nba(url):
-        espn_call = requests.get(url).text
-        match_collection = re.findall(r'<item>.+?</item>', espn_call)
-        for i in match_collection:
-            url = parse_definition("<link><!\[CDATA\[(.+?)\]", i)
-            url_image = "null"
-            author = "null"
-            source = "ESPN"
-            description = parse_definition("<description><!\[CDATA\[(.+?)\]", i)
-            title = parse_definition("<title><!\[CDATA\[(.+?)\]", i)
-            published_on = parse_definition("<pubDate>(.+?)</pubDate>", i)
-            Article.objects.new_article(url, url_image, author, source, description, title, published_on)
+    espn_call = requests.get(url).text
+    match_collection = re.findall(r'<item>.+?</item>', espn_call)
+    for i in match_collection:
+        url = parse_definition("<link><!\[CDATA\[(.+?)\]", i)
+        url_image = "null"
+        author = "null"
+        author_url = 'null'
+        source = "ESPN"
+        description = parse_definition("<description><!\[CDATA\[(.+?)\]", i)
+        title = parse_definition("<title><!\[CDATA\[(.+?)\]", i)
+        published_on = parse_definition("<pubDate>(.+?)</pubDate>", i)
+        Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
 
 def parse_definition(regex_pattern, string):
     i = re.compile(regex_pattern)
     return i.search(string).group(1)
-
 
