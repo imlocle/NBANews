@@ -46,7 +46,7 @@ class CommentManager(models.Manager):
             re.compile("fuck"),
             re.compile("shit"),
             re.compile("cunt")
-        ]
+                        ]
         errorlist = []
         if any(x in create_comment for x in curse_words):
             errorlist.append("Let's be mature")
@@ -65,7 +65,7 @@ class ArticleManager(models.Manager):
         if the_article:
             return False
         else:
-            Article.objects.create(url = url, url_image = url_image, author = author, author_url = author_url, source = source, description = description, title = title, published_on = published_on)
+            Article.objects.create(url=url, url_image=url_image, author=author, author_url=author_url, source=source, description=description, title=title, published_on=published_on)
 
 
 class User(models.Model):

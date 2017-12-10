@@ -56,7 +56,7 @@ def registration(request):
     check = User.objects.register(first_name, last_name, email, password, confirm_password)
     if check == True:
         pwhashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        user = User.objects.create(first_name = first_name, last_name = last_name, email = email, password = pwhashed)
+        user = User.objects.create(first_name=first_name, last_name=last_name, email=email, password=pwhashed)
         request.session["current_user"] = user.id
         return redirect("/nba_news")
     else:
@@ -84,8 +84,8 @@ def nba_news(request):
     newsapi(foxsportsurl)
     espn = []
     bleacher = []
-    foxsports =[]
-    realgm_arr=[]
+    foxsports = []
+    realgm_arr = []
     theplayerstribune = []
     for i in Article.objects.raw("SELECT * FROM nba_news_article order by created_at DESC"):
         if i.source == 'Bleacher Report':
