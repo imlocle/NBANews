@@ -74,7 +74,7 @@ def create_comment(request):
 
 def nba_news(request):
     current_user = User.objects.get(id = request.session['current_user'])
-    #theplayerstribune(the_players_tribune_url)
+    the_players_tribune(the_players_tribune_url)
     realgm(realgm_url)
     espn_rss_nba(espn_rss__nba_url)
     newsapi(espnurl)
@@ -84,6 +84,7 @@ def nba_news(request):
     bleacher = []
     foxsports =[]
     realgm_arr=[]
+    theplayerstribune = []
     for i in Article.objects.raw("SELECT * FROM nba_news_article order by created_at DESC"):
         if i.source == 'Bleacher Report':
             bleacher.append(i)
@@ -94,13 +95,16 @@ def nba_news(request):
     for i in Article.objects.raw("SELECT * FROM nba_news_article order by created_at ASC"):
         if i.source == 'RealGM':
             realgm_arr.append(i)
+        if i.source == "The Players' Tribune":
+            theplayerstribune.append(i)
         
     context = {
                 'current_user': current_user,
                 'espn': espn,
                 'bleacher':bleacher,
                 'foxsports': foxsports,
-                'realgm':realgm_arr
+                'realgm': realgm_arr,
+                'theplayerstribune': theplayerstribune
                 }
 
     return render(request, 'nba_news/nbanews.html', context)
@@ -123,12 +127,23 @@ def newsapi(url):
             Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
         i+=1
 
-# TLS 1.2 problem
-# def theplayerstribune(url):
-#     tribune_call = requests.get(url).text
-#     match_collection = re.findall(r'<div class=\"article-snippet\">.+?/h3><p>.+?</p>', tribune_call)
-#     for i in match_collection:
-#         url = parse_definition("<div class=\"article-snippet\">\\s*<a href=\"([^\"]+)\">", i)
+def the_players_tribune(url):
+    tribune_call = requests.get(url).text
+    tribune_call = parser.unescape(tribune_call)
+    match_collection = re.findall(r'<div class=\"article-snippet\">.+?/h3><p>.+?</p>', tribune_call)
+    for i in match_collection:
+        url = parse_definition("<div class=\"article-snippet\">\\s*<a href=\"([^\"]+)\">", i)
+        url_image = parse_definition("alt=\"\"\\s*srcset=\"(http.+?(png|jpg))\\s*340w", i)
+        author = parse_definition("<div\\s*class=\"byline dark\"><span><a href=\".+?\">(.+?)<", i)
+        author_url = parse_definition("<div\\s*class=\"byline dark\"><span><a href=\"(https.+?author[^\"]+)\">", i)
+        source = "The Players' Tribune"
+        description = parse_definition("<p>(.+?)</p>", i)
+        title = parse_definition("<h3\\s*class=\"entry-title\">\\s*<a href=\".+?\">(.+?)</a>", i)
+        published_on = "null"
+        if re.compile(r'.+?Empire.+?Season.+?Episodes.+?').match(title):
+            continue
+        Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
+        
 
 
 def espn_rss_nba(url):

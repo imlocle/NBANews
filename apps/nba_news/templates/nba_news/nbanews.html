@@ -80,6 +80,19 @@
             </table>
         </fieldset>
     </div>
+    <legend>The Players' Tribune</legend>
+    <div class="newsfeed">
+    <fieldset>
+            <table>
+                {% for i in theplayerstribune %}
+                <tr>
+                    <td><img class="urlimage" src="{{i.url_image}}" style="width:90px; height:80px;" alt=""></td>
+                    <td><a href="{{i.url}}">{{i.title}}</a></td>
+                </tr>
+                {%endfor%}
+            </table>
+        </fieldset>
+    </div>
     
 </body>
 </html>
