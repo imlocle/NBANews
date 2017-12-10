@@ -19,6 +19,8 @@ espnurl='https://newsapi.org/v2/top-headlines?sources=espn&apiKey=46bd8a2eb02c48
 bleacherreporturl='https://newsapi.org/v2/everything?sources=bleacher-report&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
 foxsportsurl='https://newsapi.org/v2/everything?sources=fox-sports&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
 nba_player_stats='http://data.nba.net/10s/prod/v1/2016/players.json'
+
+#keywords for filtering basketball related articles for newsapi
 keywords={'Basketball', 'basketball', 'NBA', 'Kobe' 'Curry', 'Jordan', 'LeBron', 'LaVar'}
 
 
@@ -143,8 +145,6 @@ def the_players_tribune(url):
         if re.compile(r'.+?Empire.+?Season.+?Episodes.+?').match(title):
             continue
         Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
-        
-
 
 def espn_rss_nba(url):
     espn_call = requests.get(url).text
@@ -179,8 +179,6 @@ def realgm(url):
         if re.compile(r'Get all the latest news.+?').match(description):
             continue
         Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
-
-        
 
 def parse_definition(regex_pattern, string):
     i = re.compile(regex_pattern, flags=re.MULTILINE|re.DOTALL)
