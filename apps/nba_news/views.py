@@ -4,23 +4,26 @@ import bcrypt
 import requests
 import re
 import ssl
-import socket
 import urllib2
+import HTMLParser
+from datetime import datetime
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from .models import User, Comment, Article
 
-
+realgm_url='https://basketball.realgm.com/rss/wiretap/0/0.xml'
 the_players_tribune_url='https://www.theplayerstribune.com/sports/basketball/'
 espn_rss__nba_url='http://www.espn.com/espn/rss/nba/news'
 news_apikey='46bd8a2eb02c485ba51cea891e1f0b1b'
 espnurl='https://newsapi.org/v2/top-headlines?sources=espn&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
 bleacherreporturl='https://newsapi.org/v2/everything?sources=bleacher-report&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
 foxsportsurl='https://newsapi.org/v2/everything?sources=fox-sports&apiKey=46bd8a2eb02c485ba51cea891e1f0b1b'
-nbaPlayerStats='http://data.nba.net/10s/prod/v1/2016/players.json'
-
+nba_player_stats='http://data.nba.net/10s/prod/v1/2016/players.json'
 keywords={'Basketball', 'basketball', 'NBA', 'Kobe' 'Curry', 'Jordan', 'LeBron', 'LaVar'}
 
+
+#parser.unescape
+parser = HTMLParser.HTMLParser()
 maxtries=1000
 
 def index(request):
@@ -71,7 +74,8 @@ def create_comment(request):
 
 def nba_news(request):
     current_user = User.objects.get(id = request.session['current_user'])
-    # theplayerstribune(the_players_tribune_url)
+    #theplayerstribune(the_players_tribune_url)
+    realgm(realgm_url)
     espn_rss_nba(espn_rss__nba_url)
     newsapi(espnurl)
     newsapi(bleacherreporturl)
@@ -79,6 +83,7 @@ def nba_news(request):
     espn = []
     bleacher = []
     foxsports =[]
+    realgm_arr=[]
     for i in Article.objects.raw("SELECT * FROM nba_news_article order by created_at DESC"):
         if i.source == 'Bleacher Report':
             bleacher.append(i)
@@ -86,11 +91,16 @@ def nba_news(request):
             espn.append(i)
         if i.source == 'Fox Sports':
             foxsports.append(i)
+    for i in Article.objects.raw("SELECT * FROM nba_news_article order by created_at ASC"):
+        if i.source == 'RealGM':
+            realgm_arr.append(i)
+        
     context = {
                 'current_user': current_user,
                 'espn': espn,
                 'bleacher':bleacher,
-                'foxsports': foxsports
+                'foxsports': foxsports,
+                'realgm':realgm_arr
                 }
 
     return render(request, 'nba_news/nbanews.html', context)
@@ -114,15 +124,12 @@ def newsapi(url):
         i+=1
 
 # TLS 1.2 problem
-def theplayerstribune(url):
-    ctx = ssl.SSLContext(ssl.OP_NO_SSLv3)
-    response = urllib2.urlopen(url, context=ctx).read()
-    print response
-    tribune_call = requests.get(url).text
-    match_collection = re.findall(r'<div class=\"article-snippet\">.+?/h3><p>.+?</p>', tribune_call)
-    for i in match_collection:
-        url = parse_definition("<div class=\"article-snippet\">\\s*<a href=\"([^\"]+)\">", i)
-        print url
+# def theplayerstribune(url):
+#     tribune_call = requests.get(url).text
+#     match_collection = re.findall(r'<div class=\"article-snippet\">.+?/h3><p>.+?</p>', tribune_call)
+#     for i in match_collection:
+#         url = parse_definition("<div class=\"article-snippet\">\\s*<a href=\"([^\"]+)\">", i)
+
 
 def espn_rss_nba(url):
     espn_call = requests.get(url).text
@@ -138,7 +145,28 @@ def espn_rss_nba(url):
         published_on = parse_definition("<pubDate>(.+?)</pubDate>", i)
         Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
 
-def parse_definition(regex_pattern, string):
-    i = re.compile(regex_pattern)
-    return i.search(string).group(1)
+def realgm(url):
+    realgm_call = requests.get(url).text
+    realgm_call = parser.unescape(realgm_call)
+    match_collection = re.findall(r'<item>.+?</item>', realgm_call, flags=re.MULTILINE|re.DOTALL)
+    for i in match_collection:
+        url = parse_definition("<link>(.+?)</link>", i)
+        url_image = "null"
+        description = parse_definition("<description>(.+?)<\/description", i).replace('<p>','').replace('</p>','').replace('<span>', '').replace('</span>', '')
+        author = "null"
+        author_url = 'null'
+        source = "RealGM"
+        title = parse_definition("<title>(.+?)<", i)
+        published_on = parse_definition("<pubDate>(.+?)</pubDate>", i)
+        #published_on = datetime.strptime(published_on, '%a, %d %b %Y %H:%M:%S %Z')
+        if re.compile(r'.+?Duncd-On.+?').match(url):
+             continue
+        if re.compile(r'Get all the latest news.+?').match(description):
+            continue
+        Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
 
+        
+
+def parse_definition(regex_pattern, string):
+    i = re.compile(regex_pattern, flags=re.MULTILINE|re.DOTALL)
+    return i.search(string).group(1)
