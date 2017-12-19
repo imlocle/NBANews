@@ -21,7 +21,7 @@ foxsportsurl='https://newsapi.org/v2/everything?sources=fox-sports&apiKey=46bd8a
 nba_player_stats='http://data.nba.net/10s/prod/v1/2016/players.json'
 
 #keywords for filtering basketball related articles for newsapi
-keywords={'Basketball', 'basketball', 'NBA', 'Kobe' 'Curry', 'Jordan', 'LeBron', 'LaVar'}
+keywords={'Basketball', 'basketball', 'NBA', 'Kobe Bryant' 'Curry', 'double-double', 'LeBron', 'LaVar'}
 
 
 #parser.unescape
@@ -67,7 +67,7 @@ def registration(request):
 def create_comment(request):
     check = Comment.objects.create_comment(request.POST['create_comment'])
     if check:
-        Comment.objects.create_comment(create_comment = request.POST['create_comment'])
+        Comment.objects.create_comment(create_comment=request.POST['create_comment'])
         return redirect('/')
     else:
         for i in range(0, len(check)):
@@ -75,7 +75,7 @@ def create_comment(request):
         return redirect('/')
 
 def nba_news(request):
-    current_user = User.objects.get(id = request.session['current_user'])
+    current_user = User.objects.get(id=request.session['current_user'])
     the_players_tribune(the_players_tribune_url)
     realgm(realgm_url)
     espn_rss_nba(espn_rss__nba_url)
@@ -94,12 +94,11 @@ def nba_news(request):
             espn.append(i)
         if i.source == 'Fox Sports':
             foxsports.append(i)
-    for i in Article.objects.raw("SELECT * FROM nba_news_article order by created_at ASC"):
         if i.source == 'RealGM':
             realgm_arr.append(i)
         if i.source == "The Players' Tribune":
             theplayerstribune.append(i)
-        
+            
     context = {
                 'current_user': current_user,
                 'espn': espn,
@@ -127,6 +126,8 @@ def newsapi(url):
             title = converttojson[i]['title']
             published_on = converttojson[i]['publishedAt']
             Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
+        else:
+            continue
         i+=1
 
 def the_players_tribune(url):
@@ -167,7 +168,7 @@ def realgm(url):
     for i in match_collection:
         url = parse_definition("<link>(.+?)</link>", i)
         url_image = "null"
-        description = parse_definition("<description>(.+?)<\/description", i).replace('<p>','').replace('</p>','').replace('<span>', '').replace('</span>', '')
+        description = parse_definition("<description>(.+?)</description", i).replace('<p>', '').replace('</p>', '').replace('<span>', '').replace('</span>', '')
         author = "null"
         author_url = 'null'
         source = "RealGM"
@@ -175,7 +176,7 @@ def realgm(url):
         published_on = parse_definition("<pubDate>(.+?)</pubDate>", i)
         #published_on = datetime.strptime(published_on, '%a, %d %b %Y %H:%M:%S %Z')
         if re.compile(r'.+?Duncd-On.+?').match(url):
-             continue
+            continue
         if re.compile(r'Get all the latest news.+?').match(description):
             continue
         Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
