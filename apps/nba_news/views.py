@@ -82,30 +82,12 @@ def nba_news(request):
     newsapi(espnurl)
     newsapi(bleacherreporturl)
     newsapi(foxsportsurl)
-    espn = []
-    bleacher = []
-    foxsports = []
-    realgm_arr = []
-    theplayerstribune = []
-    for i in Article.objects.raw("SELECT * FROM nba_news_article order by created_at DESC"):
-        if i.source == 'Bleacher Report':
-            bleacher.append(i)
-        if i.source == 'ESPN':
-            espn.append(i)
-        if i.source == 'Fox Sports':
-            foxsports.append(i)
-        if i.source == 'RealGM':
-            realgm_arr.append(i)
-        if i.source == "The Players' Tribune":
-            theplayerstribune.append(i)
-            
+    newsfeed = []
+    for i in Article.objects.raw("SELECT * FROM nba_news_article order by created_at DESC"):       
+        newsfeed.append(i)         
     context = {
                 'current_user': current_user,
-                'espn': espn,
-                'bleacher':bleacher,
-                'foxsports': foxsports,
-                'realgm': realgm_arr,
-                'theplayerstribune': theplayerstribune
+                'newsfeed': newsfeed,
                 }
 
     return render(request, 'nba_news/nbanews.html', context)

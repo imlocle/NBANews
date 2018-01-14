@@ -4,92 +4,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>NBA News</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
     <style>
         .newsfeed{
-            width: 500px;
-            height: 600px;
+            width: 30%;
+            height: 100%;
             overflow: scroll;
             display: inline-block;
+            list-style-type: none;
+            position: absolute;
+            left: 40%;
+        }
+        .newsfeed ul{
+            list-style-type: none;
+        }
+        .article_image{
+            border: 1px black;
+            height: 200px;
+            width: 300px;
         }
     </style>
 </head>
 <body>
     <a href="/logout">Log Out</a>
     <h1>Welcome {{current_user.first_name}}</h1>
-    <legend>ESPN</legend>
     <div class="newsfeed">
-    <fieldset>
-        {% for i in espn %}
-        <ul>
-            {% if i.url_image == 'null' %}
-            <li><img class="urlimage" src="https://botw-pd.s3.amazonaws.com/styles/logo-thumbnail/s3/052016/untitled-1_242.png?itok=nRWq5scp" style="width:90px; height:65px;" alt=""></li>
-            {% else %}
-            <li><img class="urlimage" src="{{i.url_image}}" style="width:90px; height:60px;" alt=""></li>
-            {%endif%}
-            <li><a href="{{i.url}}">{{i.title}}</a></li>
-        </ul>
+    <h1>News Feed</h1>
+        {% for i in newsfeed %}
+        <div class="article">
+            <ul>
+                <div class="article_image">
+                    {% if i.source == "ESPN" and i.url_image == 'null' %}
+                    <li><img class="urlimage" src="https://botw-pd.s3.amazonaws.com/styles/logo-thumbnail/s3/052016/untitled-1_242.png?itok=nRWq5scp" style="width:auto; height:100%;" alt=""></li>
+                    {% elif i.source == "RealGM" and i.url_image == 'null' %}
+                    <li><img class="urlimage" src="http://www.derekbodner.com/wp-content/uploads/2016/05/realgm.png" style="width:auto; height:100%;" alt=""></li>
+                    {% else %}
+                    <li><img class="urlimage" src="{{i.url_image}}" style="width:auto; height:100%;" alt=""></li>
+                    {%endif%}
+                </div>
+                <li><a href="{{i.url}}">{{i.title}}</a></li>
+                <li>Source: {{i.source}}</li>
+            </ul>
+        </div>
         {%endfor%}
-        </fieldset>
-    </div>
-    <legend>Bleacher Report</legend>
-    <div class="newsfeed">
-    <fieldset>
-            <table>
-                {% for i in bleacher %}
-                <tr>
-                    {% if i.url_image == 'null' %}
-                    <td><img class="urlimage" src="http://static-assets.bleacherreport.com/img/br_630_height.png" alt=""></td>
-                    {% else %}
-                    <td><img class="urlimage" src="{{i.url_image}}" style="width:90px; height:80px;" alt=""></td>
-                    {%endif%}
-                    <td><a href="{{i.url}}">{{i.title}}</a></td>
-                </tr>
-                {%endfor%}
-            </table>
-        </fieldset>
-    </div>
-    <legend>Fox Sports</legend>
-    <div class="newsfeed">
-    <fieldset>
-            <table>
-                {% for i in foxsports %}
-                <tr>
-                    <td><img class="urlimage" src="{{i.url_image}}" style="width:90px; height:65px;" alt=""></td>
-                    <td><a href="{{i.url}}">{{i.title}}</a></td>
-                </tr>
-                {%endfor%}
-            </table>
-        </fieldset>
-    </div>
-    <legend>RealGM</legend>
-    <div class="newsfeed">
-    <fieldset>
-            <table>
-                {% for i in realgm %}
-                <tr>
-                    {% if i.url_image == 'null' %}
-                    <td><img class="urlimage" src="http://www.derekbodner.com/wp-content/uploads/2016/05/realgm.png" style="width:90px; height:80px;" alt=""></td>
-                    {% else %}
-                    <td><img class="urlimage" src="{{i.url_image}}" style="width:90px; height:80px;" alt=""></td>
-                    {%endif%}
-                    <td><a href="{{i.url}}">{{i.title}}</a></td>
-                </tr>
-                {%endfor%}
-            </table>
-        </fieldset>
-    </div>
-    <legend>The Players' Tribune</legend>
-    <div class="newsfeed">
-    <fieldset>
-            <table>
-                {% for i in theplayerstribune %}
-                <tr>
-                    <td><img class="urlimage" src="{{i.url_image}}" style="width:90px; height:80px;" alt=""></td>
-                    <td><a href="{{i.url}}">{{i.title}}</a></td>
-                </tr>
-                {%endfor%}
-            </table>
-        </fieldset>
     </div>
     
 </body>
