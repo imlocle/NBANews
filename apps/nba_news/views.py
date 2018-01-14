@@ -136,7 +136,7 @@ def the_players_tribune(url):
     match_collection = re.findall(r'<div class=\"article-snippet\">.+?/h3><p>.+?</p>', tribune_call)
     for i in match_collection:
         url = parse_definition("<div class=\"article-snippet\">\\s*<a href=\"([^\"]+)\">", i)
-        url_image = parse_definition("alt=\"\"\\s*srcset=\"(http.+?(png|jpg))\\s*340w", i)
+        url_image = parse_definition("<div class=\"cover\">\\s*<img src=\"(https.+?(jpg|gif))\"", i)
         author = parse_definition("<div\\s*class=\"byline dark\"><span><a href=\".+?\">(.+?)<", i)
         author_url = parse_definition("<div\\s*class=\"byline dark\"><span><a href=\"(https.+?author[^\"]+)\">", i)
         source = "The Players' Tribune"
