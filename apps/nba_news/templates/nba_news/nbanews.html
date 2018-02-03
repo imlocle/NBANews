@@ -10,7 +10,6 @@
         .newsfeed{
             width: 30%;
             height: 100%;
-            overflow: scroll;
             display: inline-block;
             list-style-type: none;
             position: absolute;
@@ -30,7 +29,7 @@
     <a href="/logout">Log Out</a>
     <h1>Welcome {{current_user.first_name}}</h1>
     <div class="newsfeed">
-    <h1>News Feed</h1>
+        <h1>News Feed</h1>
         {% for i in newsfeed %}
         <div class="article">
             <ul>

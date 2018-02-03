@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+from splinter import Browser
+from bs4 import BeautifulSoup as bs
 import json
 import bcrypt
 import requests
@@ -10,6 +12,9 @@ from datetime import datetime
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from .models import User, Comment, Article
+from .espn import espn_rss_nba
+
+browser = Browser("chrome", headless=False)
 
 realgm_url='https://basketball.realgm.com/rss/wiretap/0/0.xml'
 the_players_tribune_url='https://www.theplayerstribune.com/sports/basketball/'
@@ -129,19 +134,19 @@ def the_players_tribune(url):
             continue
         Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
 
-def espn_rss_nba(url):
-    espn_call = requests.get(url).text
-    match_collection = re.findall(r'<item>.+?</item>', espn_call)
-    for i in match_collection:
-        url = parse_definition("<link><!\[CDATA\[(.+?)\]", i)
-        url_image = "null"
-        author = "null"
-        author_url = 'null'
-        source = "ESPN"
-        description = parse_definition("<description><!\[CDATA\[(.+?)\]", i)
-        title = parse_definition("<title><!\[CDATA\[(.+?)\]", i)
-        published_on = parse_definition("<pubDate>(.+?)</pubDate>", i)
-        Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
+# def espn_rss_nba(url):
+#     espn_call = requests.get(url).text
+#     match_collection = re.findall(r'<item>.+?</item>', espn_call)
+#     for i in match_collection:
+#         url = parse_definition("<link><!\[CDATA\[(.+?)\]", i)
+#         url_image = "null"
+#         author = "null"
+#         author_url = 'null'
+#         source = "ESPN"
+#         description = parse_definition("<description><!\[CDATA\[(.+?)\]", i)
+#         title = parse_definition("<title><!\[CDATA\[(.+?)\]", i)
+#         published_on = parse_definition("<pubDate>(.+?)</pubDate>", i)
+#         Article.objects.new_article(url, url_image, author, author_url, source, description, title, published_on)
 
 def realgm(url):
     realgm_call = requests.get(url).text

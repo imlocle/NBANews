@@ -11,3 +11,9 @@ pip install bcrypt
 pip install 'django<2.0'
 pip install -e
 pip install --two jupyter
+
+#Beautiful Soup
+pip install bs4
+
+#Browser activity
+pip install splinter
