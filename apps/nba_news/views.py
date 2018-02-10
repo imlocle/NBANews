@@ -12,9 +12,9 @@ from datetime import datetime
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from .models import User, Comment, Article
-from .espn import espn_rss_nba
+import espn
 
-browser = Browser("chrome", headless=False)
+browser = Browser("chrome", headless=True)
 
 realgm_url='https://basketball.realgm.com/rss/wiretap/0/0.xml'
 the_players_tribune_url='https://www.theplayerstribune.com/sports/basketball/'
