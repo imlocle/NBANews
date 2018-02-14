@@ -17,3 +17,8 @@ pip install bs4
 
 #Browser activity
 pip install splinter
+
+
+#ideas
+Using JS, d3, plotly to illustrate nba basketball analytics.
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
